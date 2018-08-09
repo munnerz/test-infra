@@ -167,16 +167,18 @@ func requirementDiff(pr *PullRequest, q *config.TideQuery, cc contextChecker) (s
 	}
 
 	// fixing label issues takes precedence over status contexts
-	var unsuccessful []string
-	if contexts, ok := headContextsNoCost(pr); ok {
-		for _, ctx := range unsuccessfulContexts(contexts, cc) {
-			unsuccessful = append(unsuccessful, string(ctx.Context))
+	var contexts []string
+	for _, commit := range pr.Commits.Nodes {
+		if commit.Commit.OID == pr.HeadRefOID {
+			for _, ctx := range unsuccessfulContexts(commit.Commit.Status.Contexts, cc, logrus.New().WithFields(pr.logFields())) {
+				contexts = append(contexts, string(ctx.Context))
+			}
 		}
 	}
-	diff += len(unsuccessful)
-	if desc == "" && len(unsuccessful) > 0 {
-		sort.Strings(unsuccessful)
-		trunced := truncate(unsuccessful)
+	diff += len(contexts)
+	if desc == "" && len(contexts) > 0 {
+		sort.Strings(contexts)
+		trunced := truncate(contexts)
 		if len(trunced) == 1 {
 			desc = fmt.Sprintf(" Job %s has not succeeded.", trunced[0])
 		} else {
@@ -261,7 +263,7 @@ func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullR
 			return
 		}
 
-		wantState, wantDesc := expectedStatus(queryMap, pr, pool, &cr)
+		wantState, wantDesc := expectedStatus(queryMap, pr, pool, cr)
 		var actualState githubql.StatusState
 		var actualDesc string
 		for _, ctx := range contexts {
@@ -348,7 +350,10 @@ func (sc *statusController) waitSync() {
 func (sc *statusController) sync(pool map[string]PullRequest) {
 	sc.lastSyncStart = time.Now()
 
-	sinceTime := sc.lastSuccessfulQueryStart.Add(-10 * time.Second)
+	// Query for PRs changed since the last time we successfully queried.
+	// We offset for 30 seconds of overlap because GitHub sometimes doesn't
+	// include recently changed/new PRs in the query results.
+	sinceTime := sc.lastSuccessfulQueryStart.Add(-30 * time.Second)
 	query := sc.ca.Config().Tide.Queries.AllPRsSince(sinceTime)
 	queryStartTime := time.Now()
 	allPRs, err := search(context.Background(), sc.ghc, sc.logger, query)

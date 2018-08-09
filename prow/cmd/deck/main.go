@@ -59,6 +59,7 @@ type options struct {
 	redirectHTTPTo        string
 	hiddenOnly            bool
 	runLocal              bool
+	staticFilesLocation   string
 }
 
 func (o *options) Validate() error {
@@ -91,12 +92,15 @@ func gatherOptions() options {
 	// use when behind an oauth proxy
 	flag.BoolVar(&o.hiddenOnly, "hidden-only", false, "Show only hidden jobs. Useful for serving hidden jobs behind an oauth proxy.")
 	flag.BoolVar(&o.runLocal, "run-local", false, "Serve a local copy of the UI, used by the prow/cmd/deck/runlocal script")
+	flag.StringVar(&o.staticFilesLocation, "static-files-location", "/static", "Path to the static files")
 	flag.Parse()
 	return o
 }
 
-// Matches letters, numbers, hyphens, and underscores.
-var objReg = regexp.MustCompile(`^[\w-]+$`)
+var (
+	// Matches letters, numbers, hyphens, and underscores.
+	objReg = regexp.MustCompile(`^[\w-]+$`)
+)
 
 func main() {
 	o := gatherOptions()
@@ -115,12 +119,21 @@ func main() {
 			gziphandler.GzipHandler(handleCached(http.FileServer(http.Dir(dir)))))
 	}
 
-	// locally just serve from ./static, otherwise do the full main
-	if o.runLocal {
-		mux.Handle("/", staticHandlerFromDir("./static"))
-	} else {
-		mux.Handle("/", staticHandlerFromDir("/static"))
-		mux = prodOnlyMain(o, mux)
+	// setup config agent, pod log clients etc.
+	configAgent := &config.Agent{}
+	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
+		logrus.WithError(err).Fatal("Error starting config agent.")
+	}
+
+	// setup common handlers for local and deployed runs
+	mux.Handle("/", staticHandlerFromDir(o.staticFilesLocation))
+	mux.Handle("/config", gziphandler.GzipHandler(handleConfig(configAgent)))
+	mux.Handle("/branding.js", gziphandler.GzipHandler(handleBranding(configAgent)))
+	mux.Handle("/favicon.ico", gziphandler.GzipHandler(handleFavicon(o.staticFilesLocation, configAgent)))
+
+	// when deployed, do the full main
+	if !o.runLocal {
+		mux = prodOnlyMain(configAgent, o, mux)
 	}
 
 	// setup done, actually start the server
@@ -128,13 +141,7 @@ func main() {
 }
 
 // prodOnlyMain contains logic only used when running deployed, not locally
-func prodOnlyMain(o options, mux *http.ServeMux) *http.ServeMux {
-	// setup config agent, pod log clients etc.
-	configAgent := &config.Agent{}
-	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
-		logrus.WithError(err).Fatal("Error starting config agent.")
-	}
-
+func prodOnlyMain(configAgent *config.Agent, o options, mux *http.ServeMux) *http.ServeMux {
 	kc, err := kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting client.")
@@ -164,8 +171,6 @@ func prodOnlyMain(o options, mux *http.ServeMux) *http.ServeMux {
 	mux.Handle("/badge.svg", gziphandler.GzipHandler(handleBadge(ja)))
 	mux.Handle("/log", gziphandler.GzipHandler(handleLog(ja)))
 	mux.Handle("/rerun", gziphandler.GzipHandler(handleRerun(kc)))
-	mux.Handle("/config", gziphandler.GzipHandler(handleConfig(configAgent)))
-	mux.Handle("/branding.js", gziphandler.GzipHandler(handleBranding(configAgent)))
 
 	if o.hookURL != "" {
 		mux.Handle("/plugin-help.js",
@@ -564,7 +569,7 @@ func handleBranding(ca jobs.ConfigAgent) http.HandlerFunc {
 		b, err := json.Marshal(config.Deck.Branding)
 		if err != nil {
 			logrus.WithError(err).Error("Error marshaling branding config.")
-			http.Error(w, "Failed to marhshal branding config.", http.StatusInternalServerError)
+			http.Error(w, "Failed to marshal branding config.", http.StatusInternalServerError)
 			return
 		}
 		// If we have a "var" query, then write out "var value = [...];".
@@ -573,6 +578,17 @@ func handleBranding(ca jobs.ConfigAgent) http.HandlerFunc {
 			fmt.Fprintf(w, "var %s = %s;", v, string(b))
 		} else {
 			fmt.Fprint(w, string(b))
+		}
+	}
+}
+
+func handleFavicon(staticFilesLocation string, ca jobs.ConfigAgent) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		config := ca.Config()
+		if config.Deck.Branding != nil && config.Deck.Branding.Favicon != "" {
+			http.ServeFile(w, r, staticFilesLocation+"/"+config.Deck.Branding.Favicon)
+		} else {
+			http.ServeFile(w, r, staticFilesLocation+"/favicon.ico")
 		}
 	}
 }

@@ -15,7 +15,7 @@
 # This file creates a build environment for building and running kubernetes
 # unit and integration tests
 
-FROM gcr.io/k8s-testimages/bootstrap:v20180510-809cd85b5
+FROM gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
 LABEL maintainer "Sen Lu <senlu@google.com>"
 
 # hint to kubetest that it is in CI
@@ -70,8 +70,7 @@ ARG IMAGE_ARG
 ENV IMAGE=${IMAGE_ARG}
 
 # everything below will be triggered on every new image tag ...
-ADD ["e2e-runner.sh", \
-    "kops-e2e-runner.sh", \
+ADD ["kops-e2e-runner.sh", \
     "kubetest", \
     "https://raw.githubusercontent.com/kubernetes/kubernetes/master/cluster/get-kube.sh", \
     "/workspace/"]

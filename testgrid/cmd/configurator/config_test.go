@@ -43,6 +43,7 @@ var (
 		"kopeio",
 		"tectonic",
 		"redhat",
+		"vmware",
 	}
 	orgs = []string{
 		"conformance",
@@ -356,6 +357,7 @@ func TestJobsTestgridEntryMatch(t *testing.T) {
 	for _, job := range prowConfig.AllPresubmits([]string{
 		"bazelbuild/rules_k8s",
 		"google/cadvisor",
+		"helm/charts",
 		"kubeflow/caffe2-operator",
 		"kubeflow/examples",
 		"kubeflow/experimental-beagle",
@@ -371,14 +373,15 @@ func TestJobsTestgridEntryMatch(t *testing.T) {
 		"kubeflow/tf-operator",
 		"kubeflow/website",
 		"kubernetes-sigs/cluster-api",
+		"kubernetes-sigs/cluster-api-provider-aws",
+		"kubernetes-sigs/cluster-api-provider-gcp",
 		"kubernetes-sigs/cluster-api-provider-openstack",
 		"kubernetes-sigs/poseidon",
-		"kubernetes/charts",
 		"kubernetes/cluster-registry",
+		"kubernetes/cloud-provider-vsphere",
 		"kubernetes/federation",
 		"kubernetes/heapster",
 		"kubernetes/kops",
-		"kubernetes/kube-deploy",
 		"kubernetes/kubernetes",
 		"kubernetes/test-infra",
 		"tensorflow/minigo",
