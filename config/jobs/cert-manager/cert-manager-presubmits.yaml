@@ -171,9 +171,7 @@ presubmits:
     context: cert-manager-e2e-v1-7
     trigger: "(?m)^/test( all| e2e( v?1.7)?|)( \\[.+\\])?$"
     rerun_command: "/test e2e v1.7"
-    # Match everything except PRs that only touch docs/
     always_run: false
-    run_if_changed: (^[^d].*$)|(^.[^o].*$)|(^..[^c].*$)|(^...[^s].*$)|(^....[^/].*$)
     skip_report: false
     max_concurrency: 4
     agent: kubernetes
@@ -206,9 +204,7 @@ presubmits:
     context: cert-manager-e2e-v1-8
     trigger: "(?m)^/test( all| e2e( v?1.8)?|)( \\[.+\\])?$"
     rerun_command: "/test e2e v1.8"
-    # Match everything except PRs that only touch docs/
     always_run: false
-    run_if_changed: (^[^d].*$)|(^.[^o].*$)|(^..[^c].*$)|(^...[^s].*$)|(^....[^/].*$)
     skip_report: false
     max_concurrency: 4
     agent: kubernetes
