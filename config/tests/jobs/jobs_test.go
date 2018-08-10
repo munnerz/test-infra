@@ -45,6 +45,8 @@ type configJSON map[string]map[string]interface{}
 var configPath = flag.String("config", "../../../prow/config.yaml", "Path to prow config")
 var jobConfigPath = flag.String("job-config", "../../jobs", "Path to prow job config")
 var configJSONPath = flag.String("config-json", "../../../jobs/config.json", "Path to prow job config")
+var gubernatorPath = flag.String("gubernator-path", "https://k8s-gubernator.appspot.com", "Path to linked gubernator")
+var bucket = flag.String("bucket", "kubernetes-jenkins", "Gcs bucket for log upload")
 
 func (c configJSON) ScenarioForJob(jobName string) string {
 	if scenario, ok := c[jobName]["scenario"]; ok {
@@ -145,7 +147,7 @@ func TestReportTemplate(t *testing.T) {
 			t.Errorf("Error executing template: %v", err)
 			continue
 		}
-		expectedPath := "https://k8s-gubernator.appspot.com/pr/" + tc.suffix
+		expectedPath := *gubernatorPath + "/pr/" + tc.suffix
 		if !strings.Contains(b.String(), expectedPath) {
 			t.Errorf("Expected template to contain %s, but it didn't: %s", expectedPath, b.String())
 		}
@@ -169,7 +171,7 @@ func TestURLTemplate(t *testing.T) {
 			repo:    "kubernetes",
 			job:     "k8s-pre-1",
 			build:   "1",
-			expect:  "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull/0/k8s-pre-1/1/",
+			expect:  *gubernatorPath + "/build/" + *bucket + "/pr-logs/pull/0/k8s-pre-1/1/",
 		},
 		{
 			name:    "k8s/test-infra presubmit",
@@ -178,7 +180,7 @@ func TestURLTemplate(t *testing.T) {
 			repo:    "test-infra",
 			job:     "ti-pre-1",
 			build:   "1",
-			expect:  "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull/test-infra/0/ti-pre-1/1/",
+			expect:  *gubernatorPath + "/build/" + *bucket + "/pr-logs/pull/test-infra/0/ti-pre-1/1/",
 		},
 		{
 			name:    "foo/k8s presubmit",
@@ -187,7 +189,7 @@ func TestURLTemplate(t *testing.T) {
 			repo:    "kubernetes",
 			job:     "k8s-pre-1",
 			build:   "1",
-			expect:  "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull/foo_kubernetes/0/k8s-pre-1/1/",
+			expect:  *gubernatorPath + "/build/" + *bucket + "/pr-logs/pull/foo_kubernetes/0/k8s-pre-1/1/",
 		},
 		{
 			name:    "foo-bar presubmit",
@@ -196,7 +198,7 @@ func TestURLTemplate(t *testing.T) {
 			repo:    "bar",
 			job:     "foo-pre-1",
 			build:   "1",
-			expect:  "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull/foo_bar/0/foo-pre-1/1/",
+			expect:  *gubernatorPath + "/build/" + *bucket + "/pr-logs/pull/foo_bar/0/foo-pre-1/1/",
 		},
 		{
 			name:    "k8s postsubmit",
@@ -205,21 +207,21 @@ func TestURLTemplate(t *testing.T) {
 			repo:    "kubernetes",
 			job:     "k8s-post-1",
 			build:   "1",
-			expect:  "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/logs/k8s-post-1/1/",
+			expect:  *gubernatorPath + "/build/" + *bucket + "/logs/k8s-post-1/1/",
 		},
 		{
 			name:    "k8s periodic",
 			jobType: kube.PeriodicJob,
 			job:     "k8s-peri-1",
 			build:   "1",
-			expect:  "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/logs/k8s-peri-1/1/",
+			expect:  *gubernatorPath + "/build/" + *bucket + "/logs/k8s-peri-1/1/",
 		},
 		{
 			name:    "empty periodic",
 			jobType: kube.PeriodicJob,
 			job:     "nan-peri-1",
 			build:   "1",
-			expect:  "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/logs/nan-peri-1/1/",
+			expect:  *gubernatorPath + "/build/" + *bucket + "/logs/nan-peri-1/1/",
 		},
 		{
 			name:    "k8s batch",
@@ -228,7 +230,7 @@ func TestURLTemplate(t *testing.T) {
 			repo:    "kubernetes",
 			job:     "k8s-batch-1",
 			build:   "1",
-			expect:  "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull/batch/k8s-batch-1/1/",
+			expect:  *gubernatorPath + "/build/" + *bucket + "/pr-logs/pull/batch/k8s-batch-1/1/",
 		},
 	}
 
@@ -722,7 +724,7 @@ func hasArg(wanted string, args []string) bool {
 	return false
 }
 
-func checkScenarioArgs(jobName string, args []string) error {
+func checkScenarioArgs(jobName, imageName string, args []string) error {
 	// env files/scenarios validation
 	scenarioArgs := false
 	scenario := ""
@@ -743,10 +745,6 @@ func checkScenarioArgs(jobName string, args []string) error {
 		}
 	}
 
-	if !scenarioArgs {
-		return nil
-	}
-
 	if scenario == "" {
 		entry := jobName
 		if strings.HasPrefix(jobName, "pull-security-kubernetes") {
@@ -757,10 +755,23 @@ func checkScenarioArgs(jobName string, args []string) error {
 			// the unit test is handled in jobs/config_test.py
 			return nil
 		}
-		return fmt.Errorf("job %s: missing --scenario", jobName)
+
+		if !scenarioArgs {
+			if strings.Contains(imageName, "kubekins-e2e") ||
+				strings.Contains(imageName, "bootstrap") ||
+				strings.Contains(imageName, "gcloud-in-go") {
+				return fmt.Errorf("job %s: image %s uses bootstrap.py and need scenario args", jobName, imageName)
+			}
+			return nil
+		}
+
 	} else {
 		if _, err := os.Stat(fmt.Sprintf("../../../scenarios/%s.py", scenario)); err != nil {
 			return fmt.Errorf("job %s: scenario %s does not exist: %s", jobName, scenario, err)
+		}
+
+		if !scenarioArgs {
+			return fmt.Errorf("job %s: set --scenario and will need scenario args", jobName)
 		}
 	}
 
@@ -774,7 +785,107 @@ func checkScenarioArgs(jobName string, args []string) error {
 	}
 
 	if use_shared_build_in_args && build_in_args {
-		return fmt.Errorf("Job %s: --use-shared-build and --build cannot be combined", jobName)
+		return fmt.Errorf("job %s: --use-shared-build and --build cannot be combined", jobName)
+	}
+
+	if scenario != "kubernetes_e2e" {
+		return nil
+	}
+
+	if hasArg("--provider=gke", args) {
+		if !hasArg("--deployment=gke", args) {
+			return fmt.Errorf("with --provider=gke, job %s must use --deployment=gke", jobName)
+		}
+		if hasArg("--gcp-master-image", args) {
+			return fmt.Errorf("with --provider=gke, job %s cannot use --gcp-master-image", jobName)
+		}
+		if hasArg("--gcp-nodes", args) {
+			return fmt.Errorf("with --provider=gke, job %s cannot use --gcp-nodes", jobName)
+		}
+	}
+
+	if hasArg("--deployment=gke", args) && !hasArg("--gcp-node-image", args) {
+		return fmt.Errorf("with --deployment=gke, job %s must use --gcp-node-image", jobName)
+	}
+
+	if hasArg("--env-file=jobs/pull-kubernetes-e2e.env", args) && hasArg("--check-leaked-resources", args) {
+		return fmt.Errorf("presubmit job %s should not check for resource leaks", jobName)
+	}
+
+	extracts := hasArg("--extract=", args)
+	sharedBuilds := hasArg("--use-shared-build", args)
+	nodeE2e := hasArg("--deployment=node", args)
+	localE2e := hasArg("--deployment=local", args)
+	builds := hasArg("--build", args)
+
+	if sharedBuilds && extracts {
+		return fmt.Errorf("e2e jobs %s cannot have --use-shared-build and --extract", jobName)
+	}
+
+	if !sharedBuilds && !extracts && !nodeE2e && !builds {
+		return fmt.Errorf("e2e jobs %s should get k8s build from one of --extract, --use-shared-build, --build or use --deployment=node", jobName)
+	}
+
+	expectedExtract := 1
+	if sharedBuilds || nodeE2e || builds {
+		expectedExtract = 0
+	} else if strings.Contains(jobName, "ingress") {
+		expectedExtract = 1
+	} else if strings.Contains(jobName, "upgrade") ||
+		strings.Contains(jobName, "skew") ||
+		strings.Contains(jobName, "rollback") ||
+		strings.Contains(jobName, "downgrade") ||
+		jobName == "ci-kubernetes-e2e-gce-canary" {
+		expectedExtract = 2
+	}
+
+	numExtract := 0
+	for _, arg := range args {
+		if strings.HasPrefix(arg, "--extract=") {
+			numExtract++
+		}
+	}
+	if numExtract != expectedExtract {
+		return fmt.Errorf("e2e jobs %s should have %d --extract flags, got %d", jobName, expectedExtract, numExtract)
+	}
+
+	if hasArg("--image-family", args) != hasArg("--image-project", args) {
+		return fmt.Errorf("e2e jobs %s should have both --image-family and --image-project, or none of them", jobName)
+	}
+
+	if strings.HasPrefix(jobName, "pull-kubernetes-") &&
+		!nodeE2e &&
+		!localE2e &&
+		!strings.Contains(jobName, "kubeadm") {
+		stage := "gs://kubernetes-release-pull/ci/" + jobName
+		if strings.Contains(jobName, "gke") {
+			stage = "gs://kubernetes-release-dev/ci"
+			if !hasArg("--stage-suffix="+jobName, args) {
+				return fmt.Errorf("presubmit gke jobs %s - need to have --stage-suffix=%s", jobName, jobName)
+			}
+		}
+
+		if !sharedBuilds {
+			if !hasArg("--stage="+stage, args) {
+				return fmt.Errorf("presubmit jobs %s - need to stage to %s", jobName, stage)
+			}
+		}
+	}
+
+	// test_args should not have double slashes on ginkgo flags
+	for _, arg := range args {
+		ginkgo_args := ""
+		if strings.HasPrefix(arg, "--test_args=") {
+			splitted := strings.SplitN(arg, "=", 2)
+			ginkgo_args = splitted[1]
+		} else if strings.HasPrefix(arg, "--upgrade_args=") {
+			splitted := strings.SplitN(arg, "=", 2)
+			ginkgo_args = splitted[1]
+		}
+
+		if strings.Contains(ginkgo_args, "\\\\") {
+			return fmt.Errorf("jobs %s - double slashes in ginkgo args should be single slash now : arg %s", jobName, arg)
+		}
 	}
 
 	return nil
@@ -783,24 +894,24 @@ func checkScenarioArgs(jobName string, args []string) error {
 // TestValidScenarioArgs makes sure all scenario args in job configs are valid
 func TestValidScenarioArgs(t *testing.T) {
 	for _, job := range c.AllPresubmits(nil) {
-		if job.Spec != nil {
-			if err := checkScenarioArgs(job.Name, job.Spec.Containers[0].Args); err != nil {
+		if job.Spec != nil && !job.Decorate {
+			if err := checkScenarioArgs(job.Name, job.Spec.Containers[0].Image, job.Spec.Containers[0].Args); err != nil {
 				t.Errorf("Invalid Scenario Args : %s", err)
 			}
 		}
 	}
 
 	for _, job := range c.AllPostsubmits(nil) {
-		if job.Spec != nil {
-			if err := checkScenarioArgs(job.Name, job.Spec.Containers[0].Args); err != nil {
+		if job.Spec != nil && !job.Decorate {
+			if err := checkScenarioArgs(job.Name, job.Spec.Containers[0].Image, job.Spec.Containers[0].Args); err != nil {
 				t.Errorf("Invalid Scenario Args : %s", err)
 			}
 		}
 	}
 
 	for _, job := range c.AllPeriodics() {
-		if job.Spec != nil {
-			if err := checkScenarioArgs(job.Name, job.Spec.Containers[0].Args); err != nil {
+		if job.Spec != nil && !job.Decorate {
+			if err := checkScenarioArgs(job.Name, job.Spec.Containers[0].Image, job.Spec.Containers[0].Args); err != nil {
 				t.Errorf("Invalid Scenario Args : %s", err)
 			}
 		}

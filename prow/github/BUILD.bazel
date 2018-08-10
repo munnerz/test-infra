@@ -26,6 +26,7 @@ go_library(
         "hmac.go",
         "links.go",
         "types.go",
+        "webhooks.go",
     ],
     importpath = "k8s.io/test-infra/prow/github",
     deps = [
