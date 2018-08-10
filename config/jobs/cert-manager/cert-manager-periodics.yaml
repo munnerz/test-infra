@@ -1,3 +1,9 @@
+.minikube_small: &minikube_small
+  resources:
+    requests:
+      cpu: 2900m
+      memory: 8Gi
+
 periodics:
 - name: cert-manager-e2e-v1-7
   interval: 12h
