@@ -23,7 +23,7 @@ periodics:
       key: dedicated
       operator: Equal
     containers:
-    - image: gcr.io/jetstack-build-infra/minikube-in-go-v1.7.15:0.12
+    - image: gcr.io/jetstack-build-infra/minikube-in-go-v1.7.15:0.13
       args:
       - "--repo=github.com/jetstack/cert-manager=master"
       - "--root=/go/src"
@@ -51,7 +51,7 @@ periodics:
       key: dedicated
       operator: Equal
     containers:
-    - image: gcr.io/jetstack-build-infra/minikube-in-go-v1.8.10:0.12
+    - image: gcr.io/jetstack-build-infra/minikube-in-go-v1.8.10:0.13
       args:
       - "--repo=github.com/jetstack/cert-manager=master"
       - "--root=/go/src"
