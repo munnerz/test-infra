@@ -734,10 +734,10 @@
   },
   "pull-cert-manager-verify": {
     "args": [
-      "--branch=${PULL_BASE_REF}",
-      "--script=./hack/ci/test-dockerized.sh"
+      "make",
+      "verify"
     ],
-    "scenario": "cert-manager_verify",
+    "scenario": "execute",
     "sigOwners": [
       "UNKNOWN"
     ]
