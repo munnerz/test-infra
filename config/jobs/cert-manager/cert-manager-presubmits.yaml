@@ -41,6 +41,7 @@ presubmits:
         - "--repo=github.com/$(REPO_OWNER)/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--upload=gs://jetstack-logs/pr-logs"
+        - "--job=$(JOB_NAME)"
         - "--clean"
         resources:
           requests:
