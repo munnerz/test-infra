@@ -16,8 +16,8 @@ IMG = gcr.io/jetstack-build-infra/bazelbuild
 TAG := $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 
 # TODO(bentheelder): retire some of these as they become unnecessary
-LATEST_BAZEL_VERSION=0.11.1
-BAZEL_VERSIONS=0.10.0 $(LATEST_BAZEL_VERSION)
+LATEST_BAZEL_VERSION=0.16.1
+BAZEL_VERSIONS=$(LATEST_BAZEL_VERSION)
 
 all: build
 
