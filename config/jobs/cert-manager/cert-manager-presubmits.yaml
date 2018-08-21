@@ -50,6 +50,8 @@ presubmits:
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
+        - name: GOPATH
+          value: "/go"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
