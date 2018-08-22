@@ -193,7 +193,7 @@ presubmits:
         key: dedicated
         operator: Equal
       containers:
-      - image: gcr.io/jetstack-build-infra/minikube-in-go-v1.7.15:0.13
+      - image: gcr.io/jetstack-build-infra/minikube-in-go-v1.7.15:0.14
         args:
         - "--repo=github.com/$(REPO_OWNER)/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -226,7 +226,7 @@ presubmits:
         key: dedicated
         operator: Equal
       containers:
-      - image: gcr.io/jetstack-build-infra/minikube-in-go-v1.8.10:0.13
+      - image: gcr.io/jetstack-build-infra/minikube-in-go-v1.8.10:0.14
         args:
         - "--repo=github.com/$(REPO_OWNER)/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -261,7 +261,7 @@ presubmits:
         key: dedicated
         operator: Equal
       containers:
-      - image: gcr.io/jetstack-build-infra/minikube-in-go-v1.9.6:0.13
+      - image: gcr.io/jetstack-build-infra/minikube-in-go-v1.9.6:0.14
         args:
         - "--repo=github.com/$(REPO_OWNER)/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
