@@ -108,7 +108,6 @@ plugins:
   - yuks
   - wip
   - shrug
-  - dco
 
   jetstack/kube-lego:
   - docs-no-retest
