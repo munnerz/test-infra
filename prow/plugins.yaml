@@ -86,7 +86,7 @@ plugins:
   - assign
   - hold
   - label
-
+  - dco
 
   jetstack/cert-manager:
   - docs-no-retest
@@ -108,6 +108,7 @@ plugins:
   - yuks
   - wip
   - shrug
+  - dco
 
   jetstack/kube-lego:
   - docs-no-retest
