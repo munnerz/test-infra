@@ -23,7 +23,6 @@ presubmits:
         command:
         - make
         - verify
-        - pr_verify
         resources:
           requests:
             cpu: 1
