@@ -6,10 +6,10 @@ plank:
     timeout: 7200000000000 # 2h
     grace_period: 15000000000 # 15s
     utility_images:
-      clonerefs: "registry.svc.ci.openshift.org/ci/clonerefs:latest"
-      initupload: "registry.svc.ci.openshift.org/ci/initupload:latest"
-      entrypoint: "registry.svc.ci.openshift.org/ci/entrypoint:latest"
-      sidecar: "registry.svc.ci.openshift.org/ci/sidecar:latest"
+      clonerefs: "gcr.io/k8s-prow/clonerefs:v20180824-3f00a5016"
+      initupload: "gcr.io/k8s-prow/initupload:v20180824-3f00a5016"
+      entrypoint: "gcr.io/k8s-prow/entrypoint:v20180824-3f00a5016"
+      sidecar: "gcr.io/k8s-prow/sidecar:v20180824-3f00a5016"
     gcs_configuration:
       bucket: "jetstack-logs"
       path_strategy: "legacy"
