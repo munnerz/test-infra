@@ -36,7 +36,7 @@ spec:
       - name: hook
         # Using a custom image that include the DCO sign-off checker plugin
         # until https://github.com/kubernetes/test-infra/pull/9197 merges.
-        image: eu.gcr.io/jetstack-build-infra/hook:20180829-a6ba34-dcos
+        image: eu.gcr.io/jetstack-build-infra/hook:20180829-a6ba34-dco
         imagePullPolicy: Always
         args:
         - --dry-run=false
