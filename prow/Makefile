@@ -60,10 +60,10 @@ CHECKCONFIG_VERSION       ?= $(TAG)
 CRIER_VERSION             ?= $(TAG)
 
 # These are the usual GKE variables.
-PROJECT       ?= k8s-prow
-BUILD_PROJECT ?= k8s-prow-builds
-ZONE          ?= us-central1-f
-CLUSTER       ?= prow
+PROJECT       ?= jetstack-build-infra
+BUILD_PROJECT ?= jetstack-build-infra
+ZONE          ?= europe-west1-b
+CLUSTER       ?= github-build-infra
 
 # Build and push specific variables.
 REGISTRY ?= gcr.io

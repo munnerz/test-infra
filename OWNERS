@@ -1,12 +1,6 @@
 approvers:
-- BenTheElder
-- cjwagner
-- fejta
-- ixdy
-- krzyzacy
-- michelle192837
-- mithrav
-- rmmh
-- shyamjvs
-- spiffxp
-- stevekuznetsov
+- munnerz
+- simonswine
+reviewers:
+- munnerz
+- simonswine

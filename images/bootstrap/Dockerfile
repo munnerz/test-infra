@@ -22,10 +22,6 @@ RUN mkdir -p /workspace
 ENV WORKSPACE=/workspace \
     TERM=xterm
 
-# add env we can debug with the image name:tag
-ARG IMAGE_ARG
-ENV IMAGE=${IMAGE_ARG}
-
 # common util tools
 # https://github.com/GoogleCloudPlatform/gsutil/issues/446 for python-openssl
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -104,14 +100,14 @@ RUN apt-get update && \
 
 
 # Move Docker's storage location
-RUN echo 'DOCKER_OPTS="${DOCKER_OPTS} --data-root=/docker-graph"' | \
+RUN echo 'DOCKER_OPTS="${DOCKER_OPTS} --data-root=/docker-graph --bip 10.12.10.1/24"' | \
     tee --append /etc/default/docker
 # NOTE this should be mounted and persisted as a volume ideally (!)
 # We will make a fallback one now just in case
 RUN mkdir /docker-graph
 
 # add custom docker cleanup binary
-COPY ["barnacle/barnacle", "/usr/local/bin/"]
+ADD ["./barnacle/barnacle", "/usr/local/bin"]
 
 #
 # END: DOCKER IN DOCKER SETUP
@@ -121,7 +117,11 @@ COPY ["barnacle/barnacle", "/usr/local/bin/"]
 # note the runner is also responsible for making docker in docker function if
 # env DOCKER_IN_DOCKER_ENABLED is set and similarly responsible for generating
 # .bazelrc files if bazel remote caching is enabled 
-COPY ["entrypoint.sh", "runner.sh", "create_bazel_cache_rcs.sh", \
-        "/usr/local/bin/"]
+ADD ["runner", \
+    "/workspace/"]
 
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+# add env we can debug with the image name:tag
+ARG IMAGE_ARG
+ENV IMAGE=${IMAGE_ARG}
+
+ENTRYPOINT ["/workspace/runner"]
