@@ -14,10 +14,10 @@ spec:
       - name: submit-queue
         command:
         - /mungegithub
-        - --dry-run=false
+        - --dry-run=true
         - --stderrthreshold=INFO
         - --config-path=/etc/munge-config/configmap.yaml
-        image: gcr.io/k8s-testimages/submit-queue:2018-01-10-7371ba76a
+        image: gcr.io/k8s-testimages/submit-queue:2017-05-02-90fe8836
         ports:
         - name: status
           containerPort: 8080
