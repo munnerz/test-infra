@@ -1,41 +1,396 @@
 plank:
-  job_url_template: 'https://jetstack-build-infra.appspot.com/build/jetstack-logs/{{if eq .Spec.Type "presubmit"}}pr-logs/pull{{else if eq .Spec.Type "batch"}}pr-logs/pull{{else}}logs{{end}}{{if ne .Spec.Refs.Org ""}}{{if ne .Spec.Refs.Org "kubernetes"}}/{{.Spec.Refs.Org}}_{{.Spec.Refs.Repo}}{{else if ne .Spec.Refs.Repo "kubernetes"}}/{{.Spec.Refs.Repo}}{{end}}{{end}}{{if eq .Spec.Type "presubmit"}}/{{with index .Spec.Refs.Pulls 0}}{{.Number}}{{end}}{{else if eq .Spec.Type "batch"}}/batch{{end}}/{{.Spec.Job}}/{{.Status.BuildID}}/'
-  report_template: '[Full PR test history](https://jetstack-build-infra.appspot.com/pr/{{if eq .Spec.Refs.Org "kubernetes"}}{{if eq .Spec.Refs.Repo "kubernetes"}}{{else}}{{.Spec.Refs.Repo}}/{{end}}{{else}}{{.Spec.Refs.Org}}_{{.Spec.Refs.Repo}}/{{end}}{{with index .Spec.Refs.Pulls 0}}{{.Number}}{{end}}). [Your PR dashboard](https://jetstack-build-infra.appspot.com/pr/{{with index .Spec.Refs.Pulls 0}}{{.Author}}{{end}}). Please help us cut down on flakes by [linking to](https://github.com/kubernetes/community/blob/master/contributors/devel/flaky-tests.md#filing-issues-for-flaky-tests) an [open issue](https://github.com/{{.Spec.Refs.Org}}/{{.Spec.Refs.Repo}}/issues?q=is:issue+is:open) when you hit one in your PR.'
+  job_url_template: 'https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/{{if eq .Spec.Type "presubmit"}}pr-logs/pull{{else if eq .Spec.Type "batch"}}pr-logs/pull{{else}}logs{{end}}{{if .Spec.Refs}}{{if ne .Spec.Refs.Org ""}}{{if ne .Spec.Refs.Org "kubernetes"}}/{{if and (eq .Spec.Refs.Org "kubernetes-sigs") (ne .Spec.Refs.Repo "poseidon")}}sigs.k8s.io{{else}}{{.Spec.Refs.Org}}{{end}}_{{.Spec.Refs.Repo}}{{else if ne .Spec.Refs.Repo "kubernetes"}}/{{.Spec.Refs.Repo}}{{end}}{{end}}{{end}}{{if eq .Spec.Type "presubmit"}}/{{with index .Spec.Refs.Pulls 0}}{{.Number}}{{end}}{{else if eq .Spec.Type "batch"}}/batch{{end}}/{{.Spec.Job}}/{{.Status.BuildID}}/'
+  report_template: '[Full PR test history](https://k8s-gubernator.appspot.com/pr/{{if eq .Spec.Refs.Org "kubernetes"}}{{if eq .Spec.Refs.Repo "kubernetes"}}{{else}}{{.Spec.Refs.Repo}}/{{end}}{{else}}{{.Spec.Refs.Org}}_{{.Spec.Refs.Repo}}/{{end}}{{with index .Spec.Refs.Pulls 0}}{{.Number}}{{end}}). [Your PR dashboard](https://k8s-gubernator.appspot.com/pr/{{with index .Spec.Refs.Pulls 0}}{{.Author}}{{end}}). Please help us cut down on flakes by [linking to](https://git.k8s.io/community/contributors/devel/flaky-tests.md#filing-issues-for-flaky-tests) an [open issue](https://github.com/{{.Spec.Refs.Org}}/{{.Spec.Refs.Repo}}/issues?q=is:issue+is:open) when you hit one in your PR.'
   pod_pending_timeout: 60m
   default_decoration_config:
     timeout: 7200000000000 # 2h
     grace_period: 15000000000 # 15s
     utility_images:
-      clonerefs: "gcr.io/k8s-prow/clonerefs:v20180824-3f00a5016"
-      initupload: "gcr.io/k8s-prow/initupload:v20180824-3f00a5016"
-      entrypoint: "gcr.io/k8s-prow/entrypoint:v20180824-3f00a5016"
-      sidecar: "gcr.io/k8s-prow/sidecar:v20180824-3f00a5016"
+      clonerefs: "registry.svc.ci.openshift.org/ci/clonerefs:latest"
+      initupload: "registry.svc.ci.openshift.org/ci/initupload:latest"
+      entrypoint: "registry.svc.ci.openshift.org/ci/entrypoint:latest"
+      sidecar: "registry.svc.ci.openshift.org/ci/sidecar:latest"
     gcs_configuration:
-      bucket: "jetstack-logs"
+      bucket: "kubernetes-jenkins"
       path_strategy: "legacy"
-      default_org: "jetstack"
-      default_repo: "test-infra"
+      default_org: "kubernetes"
+      default_repo: "kubernetes"
     gcs_credentials_secret: "service-account"
 
-jenkins_operator:
-  job_url_template: 'https://jetstack-build-infra.appspot.com/build/jetstack-logs/{{if eq .Spec.Type "presubmit"}}pr-logs/pull{{else if eq .Spec.Type "batch"}}pr-logs/pull{{else}}logs{{end}}{{if ne .Spec.Refs.Org ""}}{{if ne .Spec.Refs.Org "kubernetes"}}/{{.Spec.Refs.Org}}_{{.Spec.Refs.Repo}}{{else if ne .Spec.Refs.Repo "kubernetes"}}/{{.Spec.Refs.Repo}}{{end}}{{end}}{{if eq .Spec.Type "presubmit"}}/{{with index .Spec.Refs.Pulls 0}}{{.Number}}{{end}}{{else if eq .Spec.Type "batch"}}/batch{{end}}/{{.Spec.Job}}/{{.Status.BuildID}}/'
-  report_template: '[Full PR test history](https://jetstack-build-infra.appspot.com/pr/{{if eq .Spec.Refs.Org "kubernetes"}}{{if eq .Spec.Refs.Repo "kubernetes"}}{{else}}{{.Spec.Refs.Repo}}/{{end}}{{else}}{{.Spec.Refs.Org}}_{{.Spec.Refs.Repo}}/{{end}}{{with index .Spec.Refs.Pulls 0}}{{.Number}}{{end}}). [Your PR dashboard](https://jetstack-build-infra.appspot.com/pr/{{with index .Spec.Refs.Pulls 0}}{{.Author}}{{end}}). Please help us cut down on flakes by [linking to](https://github.com/kubernetes/community/blob/master/contributors/devel/flaky-tests.md#filing-issues-for-flaky-tests) an [open issue](https://github.com/{{.Spec.Refs.Org}}/{{.Spec.Refs.Repo}}/issues?q=is:issue+is:open) when you hit one in your PR.'
-
 sinker:
-  resync_period: 1h
+  resync_period: 1m
   max_prowjob_age: 48h
-  max_pod_age: 1h
+  max_pod_age: 30m
 
-# deck:
-#   external_agent_logs:
-#   - agent: jenkins
-#     url_template: 'http://jenkins-operator/job/{{.Spec.Job}}/{{.Status.BuildID}}/consoleText'
+deck:
+  tide_update_period: 1s
+  hidden_repos:
+  - kubernetes-security
 
 prowjob_namespace: default
 pod_namespace: test-pods
 log_level: info
 
+branch-protection:
+  allow_disabled_policies: true  # TODO(fejta): remove, needed by k/website
+  orgs:
+    kubernetes:
+      protect: true
+      required_status_checks:
+        contexts:
+        - cla/linuxfoundation
+      repos:
+        api:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        apiextensions-apiserver:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        apimachinery:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        apiserver:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        client-go:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        code-generator:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        dashboard:
+          required_pull_request_reviews:
+            required_approving_review_count: 1
+        dns:
+          required_status_checks:
+            strict: true
+            contexts:
+            - continuous-integration/travis-ci
+          required_pull_request_reviews:
+            required_approving_review_count: 1
+        git-sync:
+          enforce_admins: true
+          required_status_checks:
+            strict: true
+          restrictions: # only allow admins
+            users: []
+            teams: []
+        kompose:
+          required_status_checks:
+            contexts:
+            - continuous-integration/travis-ci
+          required_pull_request_reviews:
+            required_approving_review_count: 1
+        kubectl:
+          required_status_checks:
+            contexts:
+            - continuous-integration/travis-ci
+        kubernetes:
+          restrictions: # only allow admins
+            users: []
+            teams: []
+        kube-aggregator:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        metrics:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        org:
+          restrictions: # only allow admins
+            users: []
+            teams: []
+        repo-infra:
+          required_status_checks:
+            contexts:
+            - continuous-integration/travis-ci
+        sample-apiserver:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        sample-controller:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        utils:
+          required_status_checks:
+            contexts:
+            - continuous-integration/travis-ci
+        website:
+          protect: false # TODO(fejta): protect all branches soon
+          required_status_checks:
+            contexts:
+            - continuous-integration/travis-ci
+          branches:
+            master:
+              protect: true
+            release-1.4:
+              protect: true
+            release-1.5:
+              protect: true
+            release-1.6:
+              protect: true
+            release-1.7:
+              protect: true
+            release-1.8:
+              protect: true
+            release-1.9:
+              protect: true
+    kubernetes-client:
+      protect: true
+      required_status_checks:
+        contexts:
+        - cla/linuxfoundation
+      repos:
+        python:
+          required_status_checks:
+            contexts:
+            - continuous-integration/travis-ci
+        python-base:
+          required_status_checks:
+            contexts:
+            - continuous-integration/travis-ci
+    kubernetes-csi:
+      protect: true
+      required_status_checks:
+        contexts:
+        - cla/linuxfoundation
+      repos:
+        csi-test:
+          required_status_checks:
+            contexts:
+            - continuous-integration/travis-ci
+        drivers:
+          required_status_checks:
+            contexts:
+            - continuous-integration/travis-ci
+        external-attacher:
+          required_status_checks:
+            contexts:
+            - continuous-integration/travis-ci
+        external-provisioner:
+          required_status_checks:
+            contexts:
+            - continuous-integration/travis-ci
+        external-snapshotter:
+          required_status_checks:
+            contexts:
+            - continuous-integration/travis-ci
+        livenessprobe:
+          required_status_checks:
+            contexts:
+            - continuous-integration/travis-ci
+    kubernetes-incubator:
+      protect: true
+      required_status_checks:
+        contexts:
+        - cla/linuxfoundation
+      repos:
+        bootkube:
+          required_status_checks:
+            contexts:
+            - continuous-integration/travis-ci
+        kube-arbitrator:
+          required_status_checks:
+            contexts:
+            - continuous-integration/travis-ci
+        node-feature-discovery:
+          required_status_checks:
+            contexts:
+            - continuous-integration/travis-ci
+    kubernetes-sigs:
+      protect: true
+      required_status_checks:
+        contexts:
+        - cla/linuxfoundation
+
+tide:
+  queries:
+  - orgs:
+    - kubeflow
+    labels:
+    - lgtm
+    - approved
+    missingLabels:
+    - do-not-merge
+    - do-not-merge/hold
+    - do-not-merge/invalid-owners-file
+    - do-not-merge/work-in-progress
+    - needs-ok-to-test
+    - needs-rebase
+  - repos:
+    - helm/charts
+    labels:
+    - lgtm
+    - approved
+    - "Contribution Allowed"
+    missingLabels:
+    - do-not-merge
+    - do-not-merge/blocked-paths
+    - do-not-merge/cherry-pick-not-approved
+    - do-not-merge/hold
+    - do-not-merge/invalid-owners-file
+    - do-not-merge/release-note-label-needed
+    - do-not-merge/work-in-progress
+    - needs-ok-to-test
+    - needs-rebase
+  - repos:
+    - kubernetes/client-go
+    - kubernetes/cloud-provider-aws
+    - kubernetes/cloud-provider-azure
+    - kubernetes/cloud-provider-gcp
+    - kubernetes/cloud-provider-openstack
+    - kubernetes/cloud-provider-vsphere
+    - kubernetes/cluster-registry
+    - kubernetes/community
+    - kubernetes/contrib
+    - kubernetes/dashboard
+    - kubernetes/dns
+    - kubernetes/examples
+    - kubernetes/features
+    - kubernetes/federation
+    - kubernetes/gengo
+    - kubernetes/heapster
+    - kubernetes/ingress-gce
+    - kubernetes/ingress-nginx
+    - kubernetes/kops
+    - kubernetes/kube-deploy
+    - kubernetes/kube-openapi
+    - kubernetes/kube-state-metrics
+    - kubernetes/kubeadm
+    - kubernetes/kubernetes-docs-ja
+    - kubernetes/kubernetes-docs-ko
+    - kubernetes/kubernetes-docs-zh
+    - kubernetes/kubernetes-template-project
+    - kubernetes/minikube
+    - kubernetes/node-problem-detector
+    - kubernetes/org
+    - kubernetes/perf-tests
+    - kubernetes/publishing-bot
+    - kubernetes/release
+    - kubernetes/repo-infra
+    - kubernetes/sig-release
+    - kubernetes/steering
+    - kubernetes/test-infra
+    - kubernetes/utils
+    - kubernetes/website
+    - kubernetes-client/csharp
+    - kubernetes-client/gen
+    - kubernetes-client/go
+    - kubernetes-client/go-base
+    - kubernetes-client/haskell
+    - kubernetes-client/java
+    - kubernetes-client/javascript
+    - kubernetes-client/python
+    - kubernetes-client/python-base
+    - kubernetes-client/ruby
+    - kubernetes-csi/csi-test
+    - kubernetes-csi/docs
+    - kubernetes-csi/driver-registrar
+    - kubernetes-csi/drivers
+    - kubernetes-csi/external-attacher
+    - kubernetes-csi/external-provisioner
+    - kubernetes-csi/external-snapshotter
+    - kubernetes-csi/kubernetes-csi.github.io
+    - kubernetes-csi/livenessprobe
+    - kubernetes-sigs/application
+    - kubernetes-sigs/architecture-tracking
+    - kubernetes-sigs/aws-encryption-provider
+    - kubernetes-sigs/cluster-api
+    - kubernetes-sigs/cluster-api-provider-aws
+    - kubernetes-sigs/cluster-api-provider-gcp
+    - kubernetes-sigs/cluster-api-provider-openstack
+    - kubernetes-sigs/cluster-api-provider-vsphere
+    - kubernetes-sigs/contributor-playground
+    - kubernetes-sigs/contributor-site
+    - kubernetes-sigs/controller-runtime
+    - kubernetes-sigs/controller-tools
+    - kubernetes-sigs/gcp-compute-persistent-disk-csi-driver
+    - kubernetes-sigs/gcp-filestore-csi-driver
+    - kubernetes-sigs/kubebuilder
+    - kubernetes-sigs/kustomize
+    - kubernetes-incubator/ip-masq-agent
+    - kubernetes-incubator/kubespray
+    - kubernetes-incubator/service-catalog
+    - client-go/unofficial-docs
+    labels:
+    - lgtm
+    - approved
+    - "cncf-cla: yes"
+    missingLabels:
+    - do-not-merge
+    - do-not-merge/blocked-paths
+    - do-not-merge/cherry-pick-not-approved
+    - do-not-merge/hold
+    - do-not-merge/invalid-owners-file
+    - do-not-merge/release-note-label-needed
+    - do-not-merge/work-in-progress
+    - needs-ok-to-test
+    - needs-rebase
+  - repos:
+    - kubernetes/kubectl
+    labels:
+    - "cncf-cla: yes"
+    missingLabels:
+    - do-not-merge/hold
+    - do-not-merge/invalid-owners-file
+    - do-not-merge/work-in-progress
+    reviewApprovedRequired: true
+  - repos:
+    - kubernetes-sigs/federation-v2
+    - kubernetes-sigs/kubeadm-dind-cluster
+    - kubernetes-sigs/testing_frameworks
+    - kubernetes-sigs/poseidon
+    labels:
+    - lgtm
+    - approved
+    - "cncf-cla: yes"
+    missingLabels:
+    - do-not-merge/hold
+    - do-not-merge/invalid-owners-file
+    - do-not-merge/work-in-progress
+    - needs-ok-to-test
+  merge_method:
+    helm/charts: squash
+    kubeflow: squash
+    kubernetes/dashboard: squash
+    kubernetes/kube-deploy: squash
+    kubernetes/website: squash
+    kubernetes/kubernetes-docs-ja: squash
+    kubernetes/kubernetes-docs-ko: squash
+    kubernetes-client/csharp: squash
+    kubernetes-client/gen: squash
+    kubernetes-sigs/cluster-api: squash
+    kubernetes-sigs/cluster-api-provider-aws: squash
+    kubernetes-sigs/cluster-api-provider-gcp: squash
+    kubernetes-sigs/cluster-api-provider-openstack: squash
+    kubernetes-sigs/cluster-api-provider-vsphere: squash
+    kubernetes-incubator/service-catalog: squash
+  target_url: https://prow.k8s.io/tide.html
+  blocker_label: merge-blocker
+
+push_gateway:
+  endpoint: pushgateway
+
 presets:
+# credential presets
 - labels:
     preset-service-account: "true"
   env:
@@ -49,52 +404,82 @@ presets:
   - name: service
     mountPath: /etc/service-account
     readOnly: true
-
 - labels:
-    libvirt-socket: "true"
+    preset-gke-alpha-service: "true"
+  env:
+  - name: GOOGLE_APPLICATION_CREDENTIALS
+    value: /etc/service-account/service-account.json
   volumes:
-  - name: var-run-libvirt-libvirt-sock
-    hostPath:
-      path: /var/run/libvirt/libvirt-sock
-      type: Socket
+  - name: service
+    secret:
+      secretName: gke-alpha-service-account
   volumeMounts:
-  - name: var-run-libvirt-libvirt-sock
-    mountPath: /var/run/libvirt/libvirt-sock
-
+  - name: service
+    mountPath: /etc/service-account
+    readOnly: true
 - labels:
-    minikube-support: "true"
-  volumeMounts:
-  - name: var-lib-libvirt
-    mountPath: /var/lib/libvirt
-  - name: minikube-certs
-    mountPath: /var/lib/libvirt/caches/minikube/.minikube/certs
+    preset-istio-service: "true"
+  env:
+  - name: GOOGLE_APPLICATION_CREDENTIALS
+    value: /etc/service-account/istio-service-account.json
   volumes:
-  - name: var-lib-libvirt
-    hostPath:
-      path: /var/lib/libvirt
-      type: Directory
-  - name: minikube-certs
-    emptyDir: {}
-  env:
-  - name: MINIKUBE_HOME
-    value: /var/lib/libvirt/caches/minikube
-
+  - name: service
+    secret:
+      secretName: istio-service-account
+  volumeMounts:
+  - name: service
+    mountPath: /etc/service-account
+    readOnly: true
 - labels:
-    minikube-medium: "true"
+    preset-k8s-ssh: "true"
   env:
-  - name: MINIKUBE_CPUS
-    value: "4"
-  - name: MINIKUBE_MEMORY
-    value: "12288"
-
+  - name: USER
+    value: prow
+  - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+    value: /etc/ssh-key-secret/ssh-private
+  - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+    value: /etc/ssh-key-secret/ssh-public
+  volumes:
+  - name: ssh
+    secret:
+      defaultMode: 0400
+      secretName: ssh-key-secret
+  volumeMounts:
+  - name: ssh
+    mountPath: /etc/ssh-key-secret
+    readOnly: true
 - labels:
-    minikube-small: "true"
+    preset-aws-ssh: "true"
   env:
-  - name: MINIKUBE_CPUS
-    value: "3"
-  - name: MINIKUBE_MEMORY
-    value: "8192"
-
+  - name: USER
+    value: prow
+  - name: JENKINS_AWS_SSH_PRIVATE_KEY_FILE
+    value: /etc/aws-ssh/aws-ssh-private
+  - name: JENKINS_AWS_SSH_PUBLIC_KEY_FILE
+    value: /etc/aws-ssh/aws-ssh-public
+  volumes:
+  - name: aws-ssh
+    secret:
+      defaultMode: 0400
+      secretName: aws-ssh-key-secret
+  volumeMounts:
+  - name: aws-ssh
+    mountPath: /etc/aws-ssh
+    readOnly: true
+- labels:
+    preset-aws-credential: "true"
+  env:
+  - name: JENKINS_AWS_CREDENTIALS_FILE
+    value: /etc/aws-cred/credentials
+  volumes:
+  - name: aws-cred
+    secret:
+      defaultMode: 0400
+      secretName: aws-cred-new
+  volumeMounts:
+  - name: aws-cred
+    mountPath: /etc/aws-cred
+    readOnly: true
 # storage / caching presets
 - labels:
     preset-bazel-scratch-dir: "true"
@@ -107,45 +492,741 @@ presets:
   volumeMounts:
   - name: bazel-scratch
     mountPath: /bazel-scratch/.cache
-
 - labels:
     preset-bazel-remote-cache-enabled: "true"
   env:
   - name: BAZEL_REMOTE_CACHE_ENABLED
     value: "true"
+# docker-in-docker (with images/bootstrap) preset
+# NOTE: using this also requires using that image,
+# ensuring you run your test under either the ENTRYPOINT or:
+# /usr/local/bin/runner my-test-command --foo --bar
+# AND setting the following on your PodSpec:
+# securityContext:
+#   privileged: true
+- labels:
+    preset-dind-enabled: "true"
+  env:
+  - name: DOCKER_IN_DOCKER_ENABLED
+    value: "true"
+  volumes:
+  - name: docker-graph
+    emptyDir: {}
+  volumeMounts:
+  - name: docker-graph
+    mountPath: /docker-graph
 
-tide:
-  target_url: https://prow.build-infra.jetstack.net/tide.html
-  queries:
-  - repos:
-    - jetstack/okta-kubectl-auth
-    - jetstack/puppet-module-aws_ebs
-    - jetstack/puppet-module-calico
-    - jetstack/puppet-module-etcd
-    - jetstack/puppet-module-kubernetes
-    - jetstack/puppet-module-kubernetes_addons
-    - jetstack/puppet-module-prometheus
-    - jetstack/puppet-module-tarmak
-    - jetstack/puppet-module-vault_client
-    - jetstack/tarmak
-    - jetstack/test-infra
-    - jetstack/navigator
-    - jetstack/cert-manager
-    - jetstack/vault-unsealer
-    - jetstack/vault-helper
-    - jetstack/vault-plugin-auth-templated-aws
+presubmits:
+  containerd/cri:
+  - name: pull-cri-containerd-build
+    always_run: true
+    skip_branches:
+    - v0.1
     labels:
-    - lgtm
-    - approved
-    missingLabels:
-    - needs-ok-to-test
-    - do-not-merge
-    - do-not-merge/blocked-paths
-    - do-not-merge/cherry-pick-not-approved
-    - do-not-merge/hold
-    - do-not-merge/release-note-label-needed
-    - do-not-merge/work-in-progress
-    - needs-rebase
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-experimental
+        args:
+        - "--repo=github.com/containerd/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+    run_after_success:
+    - name: pull-cri-containerd-node-e2e
+      branches:
+      - master
+      always_run: true
+      skip_report: false
+      max_concurrency: 8
+      labels:
+        preset-service-account: "true"
+        preset-k8s-ssh: "true"
+      spec:
+        containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+          args:
+          - --root=/go/src
+          - "--job=$(JOB_NAME)"
+          - "--repo=k8s.io/kubernetes"
+          - "--repo=github.com/containerd/$(REPO_NAME)=$(PULL_REFS)"
+          - "--service-account=/etc/service-account/service-account.json"
+          - "--upload=gs://kubernetes-jenkins/pr-logs"
+          - "--timeout=90"
+          - "--"
+          - "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/cri-master/image-config.yaml -node-env=PULL_REFS=$(PULL_REFS)"
+    - name: pull-cri-containerd-node-e2e
+      branches:
+      - release/1.0
+      always_run: true
+      skip_report: false
+      max_concurrency: 8
+      labels:
+        preset-service-account: "true"
+        preset-k8s-ssh: "true"
+      spec:
+        containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+          args:
+          - --root=/go/src
+          - "--job=$(JOB_NAME)"
+          - "--repo=k8s.io/kubernetes=release-1.10"
+          - "--repo=github.com/containerd/$(REPO_NAME)=$(PULL_REFS)"
+          - "--service-account=/etc/service-account/service-account.json"
+          - "--upload=gs://kubernetes-jenkins/pr-logs"
+          - "--timeout=90"
+          - "--"
+          - "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/cri-master/image-config.yaml -node-env=PULL_REFS=$(PULL_REFS)"
 
-# push_gateway:
-#   endpoint: pushgateway
+  - name: pull-cri-containerd-verify
+    always_run: true
+    skip_branches:
+    - v0.1
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-experimental
+        args:
+        - "--repo=github.com/containerd/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+
+  kubernetes/kubernetes:
+  - name: pull-kubernetes-node-e2e
+    skip_branches:
+    - release-1.10  # per-release image
+    - release-1.9  # per-release image
+    always_run: true
+    max_concurrency: 12
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+        args:
+        - --root=/go/src
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=90"
+        - "--" # end bootstrap args, scenario args below
+        - "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml"
+        ports:
+        resources:
+          requests:
+            memory: "6Gi"
+  - name: pull-kubernetes-node-e2e
+    branches:
+    - release-1.10  # per-release image
+    always_run: true
+    max_concurrency: 12
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-1.10
+        args:
+        - --root=/go/src
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=90"
+        - "--" # end bootstrap args, scenario args below
+        - "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml"
+        ports:
+        resources:
+          requests:
+            memory: "6Gi"
+  - name: pull-kubernetes-node-e2e
+    branches:
+    - release-1.9  # per-release image
+    always_run: true
+    max_concurrency: 12
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-1.9
+        args:
+        - --root=/go/src
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=90"
+        - "--" # end bootstrap args, scenario args below
+        - "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml"
+        ports:
+        resources:
+          requests:
+            memory: "6Gi"
+
+  - name: pull-kubernetes-node-e2e-containerd
+    branches:
+    - master
+    always_run: false
+    max_concurrency: 12
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+        args:
+        - --root=/go/src
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=github.com/containerd/cri"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=90"
+        - --
+        - "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/cri-master/image-config.yaml"
+        resources:
+          requests:
+            memory: "6Gi"
+
+periodics:
+- interval: 2h
+  name: application-periodic-default-gke
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+      args:
+      - "--job=$(JOB_NAME)"
+      - "--repo=github.com/kubernetes-sigs/application=master"
+      - "--upload=gs://kubernetes-jenkins/logs/"
+      - "--timeout=150"
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 6
+          memory: "8Gi"
+
+- name: ci-docker-node-conformance
+  interval: 2h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+      args:
+      - --repo=k8s.io/kubernetes=master
+      - --timeout=90
+      - --root=/go/src
+      env:
+      - name: GOPATH
+        value: /go
+
+- name: ci-docker-node-features
+  interval: 4h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+      args:
+      - --repo=k8s.io/kubernetes=master
+      - --timeout=200
+      - --root=/go/src
+      env:
+      - name: GOPATH
+        value: /go
+
+- name: ci-docker-node-legacy
+  interval: 2h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+      args:
+      - --repo=k8s.io/kubernetes=master
+      - --timeout=200
+      - --root=/go/src
+      env:
+      - name: GOPATH
+        value: /go
+
+- name: ci-kubernetes-e2e-autoscaling-vpa-actuation
+  interval: 2h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+      args:
+      - "--repo=k8s.io/autoscaler=master"
+      - "--root=/go/src"
+      - "--timeout=80"
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+
+- name: ci-kubernetes-e2e-autoscaling-vpa-admission-controller
+  interval: 2h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+      args:
+      - "--repo=k8s.io/autoscaler=master"
+      - "--root=/go/src"
+      - "--timeout=80"
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+
+- name: ci-kubernetes-e2e-autoscaling-vpa-full
+  interval: 2h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+      args:
+      - "--repo=k8s.io/autoscaler=master"
+      - "--root=/go/src"
+      - "--timeout=80"
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+
+- name: ci-kubernetes-e2e-autoscaling-vpa-recommender
+  interval: 2h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+      args:
+      - "--repo=k8s.io/autoscaler=master"
+      - "--root=/go/src"
+      - "--timeout=80"
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+
+- name: ci-kubernetes-e2e-autoscaling-vpa-updater
+  interval: 2h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+      args:
+      - "--repo=k8s.io/autoscaler=master"
+      - "--root=/go/src"
+      - "--timeout=80"
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+
+- interval: 2h
+  name: ci-kubernetes-e2e-gce-gci-latest-rollback-etcd
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=110
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+
+- interval: 30m
+  name: ci-kubernetes-e2e-gce-ha-master
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=240
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+
+- interval: 30m
+  name: ci-kubernetes-e2e-gce-influxdb
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=70
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+
+- interval: 24h
+  name: ci-kubernetes-e2e-gce-min-node-permissions
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=520
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+
+- name: ci-kubernetes-e2e-gce-pod-preemption
+  interval: 2h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=300
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+      imagePullPolicy: Always
+
+- interval: 30m
+  name: ci-kubernetes-e2e-gce-prometheus
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=70
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+
+- interval: 30m
+  name: ci-kubernetes-e2e-gce-stackdriver
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=70
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+
+- interval: 30m
+  name: ci-kubernetes-e2e-gce-taint-evict
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=80
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+
+- interval: 30m
+  name: ci-kubernetes-e2e-gci-gce-autoscaling
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=350
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+
+- interval: 30m
+  name: ci-kubernetes-e2e-gci-gce-autoscaling-hpa
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=350
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+
+- interval: 30m
+  name: ci-kubernetes-e2e-gci-gce-autoscaling-migs
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=350
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+
+- interval: 30m
+  name: ci-kubernetes-e2e-gci-gce-autoscaling-migs-hpa
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=350
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+
+- interval: 30m
+  name: ci-kubernetes-e2e-gci-gce-es-logging
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=110
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+
+- interval: 30m
+  name: ci-kubernetes-e2e-gci-gce-garbage
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=620
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+
+- interval: 30m
+  name: ci-kubernetes-e2e-gci-gce-proto
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=70
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+
+- interval: 30m
+  name: ci-kubernetes-e2e-gci-gce-sd-logging
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=1340
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+
+- interval: 30m
+  name: ci-kubernetes-e2e-gci-gce-statefulset
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=110
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+
+- interval: 30m
+  name: ci-kubernetes-e2e-gci-gke-autoscaling
+  labels:
+    preset-gke-alpha-service: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=620
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+
+- interval: 30m
+  name: ci-kubernetes-e2e-gci-gke-autoscaling-hpa
+  labels:
+    preset-gke-alpha-service: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=440
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+
+- interval: 30m
+  name: ci-kubernetes-e2e-gci-gke-autoscaling-regional
+  labels:
+    preset-gke-alpha-service: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=440
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+
+- interval: 30m
+  name: ci-kubernetes-e2e-gke-sd-logging-gci-beta
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=1400
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+
+- interval: 30m
+  name: ci-kubernetes-e2e-gke-sd-logging-gci-latest
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=1400
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+
+- interval: 30m
+  name: ci-kubernetes-e2e-gke-sd-logging-gci-stable1
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=1400
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+
+- interval: 30m
+  name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-beta
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=1400
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+
+- interval: 30m
+  name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-latest
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=1400
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+
+- interval: 30m
+  name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-stable1
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=1400
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+
+- interval: 30m
+  name: ci-kubernetes-e2e-gke-stackdriver
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=70
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+
+- interval: 2h
+  name: ci-kustomize-periodic-default-gke
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+      args:
+      - "--job=$(JOB_NAME)"
+      - "--root=/go/src"
+      - "--repo=github.com/kubernetes-sigs/kustomize"
+      - "--upload=gs://kubernetes-jenkins/logs/"
+      - "--timeout=150"
+
+- interval: 2h
+  name: spark-periodic-default-gke
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+      args:
+      - "--job=$(JOB_NAME)"
+      - "--repo=github.com/apache-spark-on-k8s/spark-integration=master"
+      - "--upload=gs://kubernetes-jenkins/logs/"
+      - "--timeout=150"
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 6
+          memory: "8Gi"
+
+- interval: 2h
+  name: spark-periodic-latest-gke
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+      args:
+      - "--job=$(JOB_NAME)"
+      - "--repo=github.com/apache-spark-on-k8s/spark-integration=master"
+      - "--upload=gs://kubernetes-jenkins/logs/"
+      - "--timeout=150"
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 6
+          memory: "8Gi"

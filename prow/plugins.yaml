@@ -4,346 +4,646 @@
 ---
 triggers:
 - repos:
-  - jetstack/kube-lego
-  - jetstack/test-infra
-  - jetstack/navigator
-  - jetstack/tarmak
-  - jetstack/okta-kubectl-auth
-  - jetstack/puppet-module-aws_ebs
-  - jetstack/puppet-module-calico
-  - jetstack/puppet-module-etcd
-  - jetstack/puppet-module-kubernetes
-  - jetstack/puppet-module-kubernetes_addons
-  - jetstack/puppet-module-prometheus
-  - jetstack/puppet-module-vault_client
-  - jetstack/puppet-module-tarmak
-  - jetstack/vault-helper
-  - jetstack/vault-unsealer
-  - jetstack/vault-plugin-auth-templated-aws
-  trusted_org: jetstack
+  - kubernetes
+  - kubernetes-client
+  - kubernetes-csi
+  - kubernetes-incubator
+  - kubernetes-security
+  - kubernetes-sigs
+  trusted_org: kubernetes
+  join_org_url: "https://git.k8s.io/community/community-membership.md#member"
   only_org_members: true
 - repos:
-  - jetstack/cert-manager
-  trusted_org: cert-manager
-  only_org_members: true
+  - google/cadvisor
+  - GoogleCloudPlatform/k8s-multicluster-ingress
+  trusted_org: kubernetes
+  join_org_url: "https://git.k8s.io/community/community-membership.md#member"
+- repos:
+  - containerd/cri
+  join_org_url: "https://github.com/containerd/containerd/blob/master/MAINTAINERS"
+- repos:
+  - kubeflow
+  join_org_url: "https://github.com/kubeflow/kubeflow/blob/master/CONTRIBUTING.md"
+- repos:
+  - tensorflow/minigo
+  join_org_url: "https://github.com/tensorflow/minigo/blob/master/CONTRIBUTING.md"
+- repos:
+  - bazelbuild
+
+owners:
+  mdyamlrepos:
+  - kubernetes/website
+
+approve:
+- repos:
+  - kubernetes/cloud-provider-azure
+  - kubernetes/cluster-registry
+  - kubernetes/contrib
+  - kubernetes/dashboard
+  - kubernetes/dns
+  - kubernetes/examples
+  - kubernetes/features
+  - kubernetes/federation
+  - kubernetes/gengo
+  - kubernetes/heapster
+  - kubernetes/ingress-gce
+  - kubernetes/ingress-nginx
+  - kubernetes/kops
+  - kubernetes/kube-deploy
+  - kubernetes/kubeadm
+  - kubernetes/kubectl
+  - kubernetes/kubernetes
+  - kubernetes/kubernetes-template-project
+  - kubernetes/kube-state-metrics
+  - kubernetes/minikube
+  - kubernetes/node-problem-detector
+  - kubernetes/perf-tests
+  - kubernetes/publishing-bot
+  - kubernetes/release
+  - kubernetes/repo-infra
+  - kubernetes/sig-release
+  - kubernetes/steering
+  - kubernetes/test-infra
+  - kubernetes/utils
+  - kubernetes-incubator/ip-masq-agent
+  implicit_self_approve: true
+  lgtm_acts_as_approve: true
+- repos:
+  - kubernetes-client
+  - kubernetes-csi
+  - kubernetes-sigs
+  - client-go/unofficial-docs
+  implicit_self_approve: true
+- repos:
+  - bazelbuild
+  implicit_self_approve: true
+  review_acts_as_approve: true
+- repos:
+  - helm/charts
+  implicit_self_approve: true
+  lgtm_acts_as_approve: true
+
+# Lower bounds in number of lines changed; XS is assumed to be zero.
+size:
+  s:   10
+  m:   30
+  l:   100
+  xl:  500
+  xxl: 1000
+
+lgtm:
+- repos:
+  - bazelbuild
+  review_acts_as_lgtm: true
+
+blockades:
+- repos:
+  - kubernetes/kubernetes
+  blockregexps:
+  - ^docs/man
+  exceptionregexps:
+  - ^docs/man/man1/.*\.1$
+  explanation: "Files under `docs/man` must be in the `man1` directory and have suffix `.1`."
+- repos:
+  - kubernetes/kubernetes
+  blockregexps:
+  - ^docs/user-guide
+  exceptionregexps:
+  - ^docs/user-guide/kubectl/kubectl.*\.md$
+  explanation: "Files under `docs/user-guide` must be in the `kubectl` directory and match pattern `kubectl*.md`."
+- repos:
+  - kubernetes/kubernetes
+  blockregexps:
+  - ^docs/yaml
+  exceptionregexps:
+  - ^docs/yaml/kubectl/kubectl_.*\.yaml$
+  explanation: "Files under `docs/yaml` must be in the `kubectl` directory and match pattern `kubectl_*.yaml`."
+- repos:
+  - kubernetes/kubernetes
+  blockregexps:
+  - ^examples/
+  explanation: "examples/ has moved to https://github.com/kubernetes/examples/"
+- repos:
+  - kubernetes/community
+  blockregexps:
+  - ^events/2016
+  - ^events/elections/2017
+  explanation: "These files are historical, and from events that have already occurred."
 
 blunderbuss:
-  # Only request a review from 1 reviewer
-  request_count: 1
+  max_request_count: 2
 
-external_plugins:
-  jetstack/kube-lego:
-  - name: needs-rebase
-  jetstack/navigator:
-  - name: needs-rebase
-  jetstack/cert-manager:
-  - name: needs-rebase
-  jetstack/tarmak:
-  - name: needs-rebase
+cat:
+  key_path: /etc/cat-api/api-key
+heart:
+  adorees:
+  - k8s-merge-robot
 
-# heart:
-#   adorees:
-#   - k8s-merge-robot
+slack:
+  mergewarnings:
+  - repos:
+    - kubernetes/community
+    - kubernetes/org
+    channels:
+    - sig-contribex
+    whitelist:
+    - k8s-ci-robot
+  - repos:
+    - kubernetes/kubernetes
+    channels:
+    - kubernetes-dev
+    whitelist:
+    - k8s-ci-robot # future home of tide
+    - k8s-merge-robot # submit queue
+    - k8s-release-robot # anago
+    branch_whitelist:
+        release-1.8:
+            - jpbetz # 1.8 patch release manager
+        release-1.9:
+            - mbohlool # 1.9 patch release manager
+        release-1.10:
+            - maciekpytel # 1.10 patch release manager
+        release-1.11:
+            - foxish # 1.11 patch release manager
+        release-1.12:
+            - dougm # 1.12 branch manager
+            - hoegaarden # 1.12 branch manager shadow
+            - idealhack # 1.12 branch manager shadow
+        feature-serverside-apply:
+            - lavalamp # feature-serverside-apply "branch manager"
+            - apelisse # feature-serverside-apply "branch manager"
+  - repos:
+    - kubernetes/test-infra
+    channels:
+    - testing-ops
+    whitelist:
+    - k8s-ci-robot
 
-# slack:
-#   mergewarnings:
-#   - repos:
-#     - kubernetes/kubernetes
-#     channels:
-#     - kubernetes-dev
-#     whitelist:
-#     - k8s-merge-robot
-
-milestonestatus:
-  # You can curl the following endpoint in order to determine the github ID of your team
-  # responsible for maintaining the milestones:
-  # curl -H "Authorization: token <token>" https://api.github.com/orgs/<org-name>/teams
-  # https://github.com/orgs/cert-manager/teams/milestone-maintainers
-  maintainers_id: 2805308
+repo_milestone:
+  # Default maintainer
+  '':
+    # You can curl the following endpoint in order to determine the github ID of your team
+    # responsible for maintaining the milestones:
+    # curl -H "Authorization: token <token>" https://api.github.com/orgs/<org-name>/teams
+    maintainers_id: 2460384
+    maintainers_team: kubernetes-milestone-maintainers
 
 config_updater:
   maps:
-    # label_sync/labels.yaml:
-    #   name: label-config
-    config/config.yaml:
+    label_sync/labels.yaml:
+      name: label-config
+    prow/config.yaml:
       name: config
-    config/plugins.yaml:
+    prow/plugins.yaml:
       name: plugins
     config/jobs/**/*.yaml:
       name: job-config
 
 plugins:
+  bazelbuild/rules_k8s:
+  - approve  # Allow OWNERS to /approve
+  - assign  # Allow /assign and /cc
+  - blunderbuss  # Auto-assign people
+  - cat # /meow replies with cat pictures
+  - dog # /bark replies with dog pictures
+  - help  # Support /help and /good-first-issue
+  - hold  # Support /hold to delay merge
+  - lgtm  # Allow /lgtm
+  - lifecycle  # Allow /lifecycle stale
+  - override
+  - size  # Auto-label size of PR
+  - trigger  # Allow people to configure CI jobs to /test
+  - wip  # Auto-hold PRs with WIP in title
+  - yuks # Let prow tell a /joke
 
-  jetstack/testing:
-  - config-updater
-
-  jetstack/test-infra:
+  google/cadvisor:
   - trigger
-  - shrug
-  - lgtm
+
+  kubeflow:
+    # Enable /approve and /assign commands.
+    - approve
+    - assign
+    - blunderbuss
+    - help
+    - hold
+    - label
+    - lgtm
+    # Lets PRs & issues be flagged as stale
+    - lifecycle
+    - size
+    # Allows cleaning up stale commit statuses
+    - skip
+    # Applies a label to PRs with wip in the title to block merge
+    - wip
+    - trigger
+
+  helm/charts:
   - approve
-  - size
-  - wip
-  - lifecycle
   - assign
-  - hold
-  - label
-  - dco
-
-  jetstack/cert-manager:
-  - docs-no-retest
-  - trigger
-  - release-note
   - blunderbuss
+  - cla
+  - hold
+  - lgtm
+  - trigger
+
+  kubernetes:
   - assign
+  - cat
+  - cla
+  - dog
   - golint
   - heart
+  - help
   - hold
   - label
   - lgtm
-  - approve
+  - lifecycle
+  - shrug
+  - sigmention
+  - size
   - skip
+  - slackevents
+  - wip
+  - yuks
+
+  kubernetes/client-go:
+  - approve
+
+  kubernetes/cloud-provider-aws:
+  - approve
+  - blunderbuss
+  - trigger
+
+  kubernetes/cloud-provider-azure:
+  - approve
+  - blunderbuss
+  - trigger
+
+  kubernetes/cloud-provider-gcp:
+  - approve
+  - blunderbuss
+  - trigger
+
+  kubernetes/cloud-provider-openstack:
+  - approve
+  - blunderbuss
+  - trigger
+
+  kubernetes/cloud-provider-vsphere:
+  - approve
+  - blunderbuss
+  - trigger
+
+  kubernetes/cluster-registry:
+  - approve
+  - trigger
+
+  kubernetes/community:
+  - approve
+  - blunderbuss
+  - blockade
+  - owners-label
+  - require-sig
+  - trigger
+
+  kubernetes/contrib:
+  - approve
+  - blunderbuss
+
+  kubernetes/dashboard:
+  - approve
+
+  kubernetes/dns:
+  - approve
+  - trigger
+
+  kubernetes/examples:
+  - trigger
+  - approve
+
+  kubernetes/features:
+  - approve
+  - stage
+
+  kubernetes/ingress-gce:
+  - approve
+  - trigger
+
+  kubernetes/ingress-nginx:
+  - approve
+
+  kubernetes/federation:
+  - trigger
+  - approve
+
+  kubernetes/gengo:
+  - approve
+
+  kubernetes/heapster:
+  - approve
+  - blunderbuss
+  - trigger
+
+  kubernetes/kops:
+  - trigger
+  - approve
+
+  kubernetes/kube-deploy:
+  - approve
+  - blunderbuss
+
+  kubernetes/kubeadm:
+  - approve
+
+  kubernetes/kubectl:
+  - approve
+
+  kubernetes/kubernetes:
+  - approve
+  - blockade
+  - blunderbuss
+  - cherry-pick-unapproved
+  - docs-no-retest
   - milestone
   - milestonestatus
-  - lifecycle
-  - size
-  - yuks
-  - wip
-  - shrug
-
-  jetstack/kube-lego:
-  - docs-no-retest
-  - trigger
-  - assign
-  - lifecycle
-  - heart
-  - hold
-  - label
-  - lgtm
-  - size
-  - yuks
-  - wip
-  - shrug
-
-  jetstack/navigator:
-  - docs-no-retest
-  - trigger
+  - owners-label
   - release-note
-  - blunderbuss
-  - assign
-  - lifecycle
-  - golint
-  - heart
-  - hold
-  - label
+  - require-sig
+  - trigger
+
+  kubernetes/kubernetes-docs-ja:
   - approve
-  - lgtm
-  - milestonestatus
-  - size
-  - yuks
-  - wip
-  - shrug
+  - blunderbuss
 
-  jetstack/tarmak:
-  - docs-no-retest
+  kubernetes/kubernetes-docs-ko:
+  - approve
+  - blunderbuss
+
+  kubernetes/kubernetes-docs-zh:
+  - approve
+  - blunderbuss
+
+  kubernetes/kubernetes-template-project:
+  - approve
+
+  kubernetes/kube-openapi:
+  - approve
+  - blunderbuss
+
+  kubernetes/kube-state-metrics:
+  - approve
+  - blunderbuss
+
+  kubernetes/minikube:
+  - approve
+
+  kubernetes/node-problem-detector:
+  - approve
+  - blunderbuss
+
+  kubernetes/org:
+  - approve
+  - blunderbuss
+  - owners-label
   - trigger
-  - release-note
+
+  kubernetes/perf-tests:
+  - approve
+  - blunderbuss
+  - trigger
+
+  kubernetes/publishing-bot:
+  - approve
+  - blunderbuss
+
+  kubernetes/release:
+  - approve
+  - trigger
+
+  kubernetes/repo-infra:
+  - approve
+
+  kubernetes/sig-release:
+  - approve
+  - blunderbuss
+  - stage
+
+  kubernetes/steering:
+  - approve
+
+  kubernetes/test-infra:
+  - approve
+  - blunderbuss
+  - config-updater
+  - milestone
+  - owners-label
+  - override
+  - trigger
+  - verify-owners
+
+  kubernetes/utils:
+  - approve
+  - blunderbuss
+
+  kubernetes/website:
+  - approve
+  - blunderbuss
+
+  kubernetes-client:
+  - approve
   - assign
   - blunderbuss
+  - cat
+  - cla
+  - dog
+  - heart
+  - help
+  - hold
+  - label
+  - lgtm
   - lifecycle
-  - golint
+  - shrug
+  - size
   - skip
-  - heart
-  - hold
-  - label
-  - lgtm
-  - approve
-  - milestonestatus
-  - size
-  - yuks
   - wip
-  - shrug
+  - yuks
 
-  jetstack/okta-kubectl-auth:
-  - docs-no-retest
-  - trigger
-  - release-note
+  kubernetes-csi:
+  - approve
   - assign
   - blunderbuss
-  - lifecycle
-  - golint
+  - cat
+  - cla
+  - dog
   - heart
+  - help
   - hold
   - label
   - lgtm
+  - lifecycle
+  - shrug
+  - size
+  - skip
+  - wip
+  - yuks
+
+  kubernetes-incubator:
+  - assign
+  - cla
+  - label
+  - lgtm
+  - lifecycle
+  - size
+
+  kubernetes-incubator/kubespray:
   - approve
-  - size
-  - yuks
-  - wip
-  - shrug
+  - blunderbuss
 
-  jetstack/puppet-module-aws_ebs:
-  - docs-no-retest
-  - trigger
-  - assign
-  - lifecycle
-  - heart
+  kubernetes-incubator/service-catalog:
+  - approve
+  - blunderbuss
+  - cat
+  - dog
+  - help
   - hold
-  - label
-  - lgtm
-  - size
-  - yuks
-  - wip
-  - shrug
-
-  jetstack/puppet-module-calico:
-  - docs-no-retest
   - trigger
-  - assign
-  - lifecycle
-  - heart
+  - verify-owners
+  - wip
+
+  kubernetes-incubator/ip-masq-agent:
+  - approve
   - hold
-  - label
-  - lgtm
-  - size
-  - yuks
-  - wip
-  - shrug
-
-  jetstack/puppet-module-etcd:
-  - docs-no-retest
   - trigger
-  - assign
-  - lifecycle
-  - heart
-  - hold
-  - label
-  - lgtm
-  - size
-  - yuks
-  - wip
-  - shrug
 
-  jetstack/puppet-module-kubernetes:
-  - docs-no-retest
+  kubernetes-security/kubernetes:
   - trigger
-  - assign
-  - lifecycle
-  - heart
-  - hold
-  - label
-  - lgtm
-  - size
-  - yuks
-  - wip
-  - shrug
 
-  jetstack/puppet-module-kubernetes_addons:
-  - docs-no-retest
-  - trigger
-  - assign
-  - lifecycle
-  - heart
-  - hold
-  - label
-  - lgtm
-  - size
-  - yuks
-  - wip
-  - shrug
-
-  jetstack/puppet-module-prometheus:
-  - docs-no-retest
-  - trigger
-  - assign
-  - lifecycle
-  - heart
-  - hold
-  - label
-  - lgtm
-  - size
-  - yuks
-  - wip
-  - shrug
-
-  jetstack/puppet-module-tarmak:
-  - docs-no-retest
-  - trigger
-  - assign
-  - lifecycle
-  - heart
-  - hold
-  - label
-  - lgtm
-  - size
-  - yuks
-  - wip
-  - shrug
-
-  jetstack/puppet-module-vault_client:
-  - docs-no-retest
-  - trigger
-  - assign
-  - lifecycle
-  - heart
-  - hold
-  - label
-  - lgtm
-  - size
-  - yuks
-  - wip
-  - shrug
-
-  jetstack/vault-helper:
-  - docs-no-retest
-  - trigger
-  - release-note
+  kubernetes-sigs:
+  - approve
   - assign
   - blunderbuss
-  - lifecycle
-  - golint
+  - cat
+  - cla
+  - dog
   - heart
+  - help
   - hold
   - label
   - lgtm
-  - approve
-  - size
-  - yuks
-  - wip
+  - lifecycle
   - shrug
+  - size
+  - skip
+  - wip
+  - yuks
 
-  jetstack/vault-unsealer:
-  - docs-no-retest
+  kubernetes-sigs/federation-v2:
   - trigger
-  - release-note
-  - assign
-  - blunderbuss
-  - lifecycle
-  - golint
-  - heart
-  - hold
-  - label
-  - lgtm
-  - approve
-  - size
-  - yuks
-  - wip
-  - shrug
 
-  jetstack/vault-plugin-auth-templated-aws:
-  - docs-no-retest
+  kubernetes-sigs/testing_frameworks:
   - trigger
-  - release-note
+
+  kubernetes-sigs/poseidon:
+  - trigger
+
+  kubernetes-sigs/cluster-api:
+  - trigger
+
+  kubernetes-sigs/cluster-api-provider-aws:
+  - trigger
+
+  kubernetes-sigs/cluster-api-provider-gcp:
+  - trigger
+
+  kubernetes-sigs/cluster-api-provider-openstack:
+  - trigger
+
+  kubernetes-sigs/cluster-api-provider-vsphere:
+  - trigger
+
+  kubernetes-sigs/contributor-playground:
+  - require-sig
+
+  kubernetes-sigs/gcp-compute-persistent-disk-csi-driver:
+  - trigger
+
+  kubernetes-sigs/gcp-filestore-csi-driver:
+  - trigger
+
+  containerd/cri:
   - assign
-  - blunderbuss
-  - lifecycle
-  - golint
-  - heart
-  - hold
+  - cla
   - label
   - lgtm
-  - approve
+  - lifecycle
   - size
-  - yuks
+  - trigger
+
+  tensorflow/k8s:
+  - trigger
+
+  tensorflow/minigo:
+  - trigger
+  - lgtm
+  - size
+
+  spxtr/envoy:
+  - assign
+  - lgtm
+  - lifecycle
+  - trigger
+
+  GoogleCloudPlatform/k8s-multicluster-ingress:
+  - trigger
+
+  client-go/unofficial-docs:
+  - assign
+  - approve
+  - lgtm
+  - approve
+  - label
+  - cla
+  - cat
+  - dog
+  - help
+  - blunderbuss
   - wip
-  - shrug
+  - hold
+
+external_plugins:
+  kubernetes/community:
+  - name: needs-rebase
+    events:
+      - pull_request
+  kubernetes/contrib:
+  - name: needs-rebase
+    events:
+      - pull_request
+  kubernetes/kops:
+  - name: needs-rebase
+    events:
+      - pull_request
+  kubernetes/kubernetes:
+  - name: needs-rebase
+    events:
+      - pull_request
+  kubernetes/org:
+  - name: needs-rebase
+    events:
+      - pull_request
+  kubernetes/test-infra:
+  - name: needs-rebase
+    events:
+      - pull_request
+  client-go/unofficial-docs:
+  - name: needs-rebase
+    events:
+      - pull_request
+  kubernetes-incubator/service-catalog:
+  - name: needs-rebase
+    events:
+      - pull_request
+  kubernetes-sigs/contributor-playground:
+  - name: needs-rebase
+    events:
+      - pull_request

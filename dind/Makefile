@@ -14,12 +14,6 @@
 
 .PHONY: node cluster up
 
-KUBE_VERSIONS = 1.10.2 1.9.7
-
-$(KUBE_VERSIONS):
-	./build-node.sh $@
-	./build-cluster.sh $@
-
 node:
 	./build-node.sh
 
