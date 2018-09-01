@@ -12,12 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-VERSION = 0.12
+VERSION := $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
+
+IMG="gcr.io/k8s-testimages/gcloud-in-go"
 
 image:
-	docker build -t "gcr.io/jetstack-build-infra/gcloud-in-go:$(VERSION)" .
+	docker build --build-arg "IMAGE_ARG=$(IMG):$(VERSION)" -t "$(IMG):$(VERSION)" .
 
 push: image
-	gcloud docker -- push "gcr.io/jetstack-build-infra/gcloud-in-go:$(VERSION)"
+	docker push "$(IMG):$(VERSION)"
 
 .PHONY: image push

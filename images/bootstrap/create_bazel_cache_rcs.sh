@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-CACHE_BUCKET="jetstack-bazel-cache"
-CACHE_CREDENTIALS="${GOOGLE_APPLICATION_CREDENTIALS:-}"
+CACHE_HOST="bazel-cache.default"
+CACHE_PORT="8080"
 
 # get the installed version of a debian package
 package_to_version () {
@@ -82,10 +82,17 @@ make_bazel_rc () {
     # point bazel at our http cache ...
     # NOTE our caches are versioned by all path segments up until the last two
     # IE PUT /foo/bar/baz/cas/asdf -> is in cache "/foo/bar/baz"
-    local cache_id="$(get_workspace),$(hash_toolchains)"
-    local cache_url="https://storage.googleapis.com/${CACHE_BUCKET}/${cache_id}"
+    local cache_id
+    cache_id="$(get_workspace),$(hash_toolchains)"
+    local cache_url
+    cache_url="http://${CACHE_HOST}:${CACHE_PORT}/${cache_id}"
     echo "build --remote_http_cache=${cache_url}"
-    echo "build --google_credentials=${CACHE_CREDENTIALS}"
+    # specifically for bazel 0.15.0 we want to set this flag
+    # our docker image now sets BAZEL_VERSION with the bazel version as installed
+    # https://github.com/bazelbuild/bazel/issues/5047#issuecomment-401295174
+    if [[ "${BAZEL_VERSION:-}" = "0.15.0" ]]; then
+        echo "build --remote_max_connections=200"
+    fi
 }
 
 # https://docs.bazel.build/versions/master/user-manual.html#bazelrc

@@ -26,25 +26,23 @@ RUN apt-get update && apt-get install -y \
     wget && \
     apt-get clean
 
-ENV GCLOUD_VERSION 163.0.0
-RUN wget https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-$GCLOUD_VERSION-linux-x86_64.tar.gz && \
-    tar xf google-cloud-sdk-$GCLOUD_VERSION-linux-x86_64.tar.gz -C / && \
-    rm google-cloud-sdk-$GCLOUD_VERSION-linux-x86_64.tar.gz && \
-    /google-cloud-sdk/install.sh && \
-    curl -Lo helm.tar.gz https://storage.googleapis.com/kubernetes-helm/helm-v2.10.0-linux-amd64.tar.gz && \
-    tar xvf helm.tar.gz && \
-    mv linux-amd64/helm /usr/local/bin
-ENV PATH "/google-cloud-sdk/bin:${PATH}"
+# Install gcloud
 
-RUN curl -L https://github.com/golang/dep/releases/download/v0.4.1/dep-linux-amd64 >/tmp/dep \
-    && curl -L https://github.com/mikefarah/yaml/releases/download/1.13.1/yaml_linux_amd64 >/tmp/yaml \
-    && curl -L vert https://github.com/Masterminds/vert/releases/download/v0.1.0/vert-v0.1.0-linux-amd64 >/tmp/vert \
-    && chmod +x /tmp/dep \
-    && chmod +x /tmp/yaml \
-    && chmod +x /tmp/vert \
-    && mv /tmp/dep /tmp/yaml /tmp/vert /usr/local/bin/
-RUN go get -v golang.org/x/tools/cmd/goimports
+ENV PATH=/google-cloud-sdk/bin:/workspace:${PATH} \
+    CLOUDSDK_CORE_DISABLE_PROMPTS=1
 
 WORKDIR /workspace
+
+RUN wget -q https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz && \
+    tar xzf google-cloud-sdk.tar.gz -C / && \
+    rm google-cloud-sdk.tar.gz && \
+    /google-cloud-sdk/install.sh \
+        --disable-installation-options \
+        --bash-completion=false \
+        --path-update=false \
+        --usage-reporting=false && \
+    gcloud components install alpha beta kubectl && \
+    gcloud info | tee /workspace/gcloud-info.txt
+
 ADD runner /
 ENTRYPOINT ["/bin/bash", "/runner"]
