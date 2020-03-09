@@ -1,10 +1,46 @@
+default_test_group:
+  days_of_results: 14 # Number of days of test results to gather and serve.
+  tests_name_policy: 2 # replace the name of the test
+  ignore_pending: false # Show in-progress tests.
+  column_header:
+  - configuration_value: Commit # Shows the commit number on column header
+  num_columns_recent: 10
+  use_kubernetes_client: true # These two fields are deprecated and should always be true
+  is_external: true
+  alert_stale_results_hours: 0 # Don't alert for staleness by default.
+  num_failures_to_alert: 3 # Consider a test failed if it has 3 or more consecutive failures.
+  num_passes_to_disable_alert: 1 # Consider a failing test passing if it has 1 or more consecutive passes.
+  code_search_path: github.com/jetstack/cert-manager/search # URL for regression search links.
+
+default_dashboard_tab:
+  open_bug_template:
+    url: https://github.com/jetstack/cert-manager/issues/
+  open_test_template: # The URL template to visit after clicking on a cell
+    url: https://prow.build-infra.jetstack.net/view/gcs/<gcs_prefix>/<changelist>
+  file_bug_template: # The URL template to visit when filing a bug
+    url: https://github.com/jetstack/cert-manager/issues/new
+    options:
+    - key: title
+      value: 'E2E: <test-name>'
+    - key: body
+      value: <test-url>
+  attach_bug_template: # The URL template to visit when attaching a bug
+    url: # empty
+    options: #empty
+  results_text: See these results on Prow # Text to show in the about menu as a link to another view of the results
+  results_url_template: # The URL template to visit after clicking
+    url: https://prow.build-infra.jetstack.net/job-history/<gcs_prefix>
+  code_search_path: github.com/jetstack/cert-manager/search # URL for regression search links.
+  num_columns_recent: 10
+  code_search_url_template: # The URL template to visit when searching for changelists
+    url: https://github.com/jetstack/cert-manager/compare/<start-custom-0>...<end-custom-0>
+
 dashboards:
 - name: jetstack-cert-manager-master
   dashboard_tab:
-  - base_options: width=10
-    code_search_path: https://github.com/jetstack/cert-manager/search
-    code_search_url_template:
-      url: https://github.com/jetstack/cert-manager/compare/<start-custom-0>...<end-custom-0>
+  - name: cert-manager-master-bazel
+    description: Bazel verify results
+    test_group_name: ci-cert-manager-bazel
     file_bug_template:
       options:
       - key: title
@@ -12,19 +48,9 @@ dashboards:
       - key: body
         value: <test-url>
       url: https://github.com/jetstack/cert-manager/issues/new
-    name: cert-manager-master-bazel
-    description: Bazel verify results
-    open_bug_template:
-      url: https://github.com/jetstack/cert-manager/issues/
-    open_test_template:
-      url: https://prow.build-infra.jetstack.net/view/gcs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.build-infra.jetstack.net/job-history/<gcs_prefix>
-    test_group_name: ci-cert-manager-bazel
-  - base_options: width=10
-    code_search_path: https://github.com/jetstack/cert-manager/search
-    code_search_url_template:
-      url: https://github.com/jetstack/cert-manager/compare/<start-custom-0>...<end-custom-0>
+  - name: cert-manager-master-bazel-experimental
+    description: Bazel verify results using newest/unreleased Bazel version
+    test_group_name: ci-cert-manager-bazel-experimental
     file_bug_template:
       options:
       - key: title
@@ -32,134 +58,23 @@ dashboards:
       - key: body
         value: <test-url>
       url: https://github.com/jetstack/cert-manager/issues/new
-    name: cert-manager-master-bazel-experimental
-    description: Bazel verify results using newest/unreleased Bazel version
-    open_bug_template:
-      url: https://github.com/jetstack/cert-manager/issues/
-    open_test_template:
-      url: https://prow.build-infra.jetstack.net/view/gcs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.build-infra.jetstack.net/job-history/<gcs_prefix>
-    test_group_name: ci-cert-manager-bazel-experimental
-  - base_options: width=10
-    code_search_path: https://github.com/jetstack/cert-manager/search
-    code_search_url_template:
-      url: https://github.com/jetstack/cert-manager/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/jetstack/cert-manager/issues/new
-    name: cert-manager-master-e2e-v1-11
+  - name: cert-manager-master-e2e-v1-11
     description: End-to-end tests using Kubernetes 1.11
-    open_bug_template:
-      url: https://github.com/jetstack/cert-manager/issues/
-    open_test_template:
-      url: https://prow.build-infra.jetstack.net/view/gcs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.build-infra.jetstack.net/job-history/<gcs_prefix>
     test_group_name: ci-cert-manager-e2e-v1-11
-  - base_options: width=10
-    code_search_path: https://github.com/jetstack/cert-manager/search
-    code_search_url_template:
-      url: https://github.com/jetstack/cert-manager/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/jetstack/cert-manager/issues/new
-    name: cert-manager-master-e2e-v1-12
+  - name: cert-manager-master-e2e-v1-12
     description: End-to-end tests using Kubernetes 1.12
-    open_bug_template:
-      url: https://github.com/jetstack/cert-manager/issues/
-    open_test_template:
-      url: https://prow.build-infra.jetstack.net/view/gcs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.build-infra.jetstack.net/job-history/<gcs_prefix>
     test_group_name: ci-cert-manager-e2e-v1-12
-  - base_options: width=10
-    code_search_path: https://github.com/jetstack/cert-manager/search
-    code_search_url_template:
-      url: https://github.com/jetstack/cert-manager/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/jetstack/cert-manager/issues/new
-    name: cert-manager-master-e2e-v1-13
+  - name: cert-manager-master-e2e-v1-13
     description: End-to-end tests using Kubernetes 1.13
-    open_bug_template:
-      url: https://github.com/jetstack/cert-manager/issues/
-    open_test_template:
-      url: https://prow.build-infra.jetstack.net/view/gcs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.build-infra.jetstack.net/job-history/<gcs_prefix>
     test_group_name: ci-cert-manager-e2e-v1-13
-  - base_options: width=10
-    code_search_path: https://github.com/jetstack/cert-manager/search
-    code_search_url_template:
-      url: https://github.com/jetstack/cert-manager/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/jetstack/cert-manager/issues/new
-    name: cert-manager-master-e2e-v1-14
+  - name: cert-manager-master-e2e-v1-14
     description: End-to-end tests using Kubernetes 1.14
-    open_bug_template:
-      url: https://github.com/jetstack/cert-manager/issues/
-    open_test_template:
-      url: https://prow.build-infra.jetstack.net/view/gcs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.build-infra.jetstack.net/job-history/<gcs_prefix>
     test_group_name: ci-cert-manager-e2e-v1-14
-  - base_options: width=10
-    code_search_path: https://github.com/jetstack/cert-manager/search
-    code_search_url_template:
-      url: https://github.com/jetstack/cert-manager/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/jetstack/cert-manager/issues/new
-    name: cert-manager-master-e2e-v1-15
+  - name: cert-manager-master-e2e-v1-15
     description: End-to-end tests using Kubernetes 1.15
-    open_bug_template:
-      url: https://github.com/jetstack/cert-manager/issues/
-    open_test_template:
-      url: https://prow.build-infra.jetstack.net/view/gcs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.build-infra.jetstack.net/job-history/<gcs_prefix>
     test_group_name: ci-cert-manager-e2e-v1-15
-  - base_options: width=10
-    code_search_path: https://github.com/jetstack/cert-manager/search
-    code_search_url_template:
-      url: https://github.com/jetstack/cert-manager/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: title
-        value: 'E2E: <test-name>'
-      - key: body
-        value: <test-url>
-      url: https://github.com/jetstack/cert-manager/issues/new
-    name: cert-manager-master-e2e-v1-16
+  - name: cert-manager-master-e2e-v1-16
     description: End-to-end tests using Kubernetes 1.16
-    open_bug_template:
-      url: https://github.com/jetstack/cert-manager/issues/
-    open_test_template:
-      url: https://prow.build-infra.jetstack.net/view/gcs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.build-infra.jetstack.net/job-history/<gcs_prefix>
     test_group_name: ci-cert-manager-e2e-v1-16
 
 # These are periodic jobs that target the master branch of cert-manager
